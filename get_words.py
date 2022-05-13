@@ -1,7 +1,7 @@
 import pickle
 import pandas as pd
 
-def get_all_words():
+def get_all_words(verbose = False):
     data = pd.read_csv("ods_fullforms_2020-08-26.csv",sep='\t',header = None)
     words = list(data[0])
 
@@ -25,16 +25,17 @@ def get_all_words():
     # Drop duplicates
     words = set(words)
 
-    print("Letters in words:")
-    letters = set("".join(words))
-    print(", ".join(sorted(letters)))
-    print(f"Number of words: {len(words):,}")
+    if verbose:
+        print("Letters in words:")
+        letters = set("".join(words))
+        print(", ".join(sorted(letters)))
+        print(f"Number of words: {len(words):,}")
     
     return words
 
 def main():
     five_letter_words = get_all_words()
-    with open('5_letter_words.pkl', 'wb') as f:
+    with open('five_letter_words.pkl', 'wb') as f:
         pickle.dump(five_letter_words, f)
 
 if __name__ == '__main__':
