@@ -5,17 +5,21 @@ def get_all_words(verbose = False):
     data = pd.read_csv("ods_fullforms_2020-08-26.csv",sep='\t',header = None)
     words = list(data[0])
 
+    # Lowercase
+    words = [w.lower() for w in words]
+
     # Remove accents and aa
     map_letters = {
         'aa':'å',
         'ã':'a',
         'ê':'e',
-        'é':'e'}
+        'é':'e'
+        }
     for old, new in map_letters.items():
-        words = [w.replace(old,new) for w in words]
+        words = [w.replace(old, new) for w in words]
     
     # 5 letters
-    words = [w.lower() for w in words if len(w) == 5]
+    words = [w for w in words if len(w) == 5]
 
     # Remove words with strange symbols
     only_allowed = "abcdefghijklmnopqrstuvxyzæøå"
@@ -23,8 +27,8 @@ def get_all_words(verbose = False):
     words = [w for w in words if word_allowed(w)]
 
     # Drop duplicates
-    words = set(words)
-
+    words = sorted(list(set(words)))
+    
     if verbose:
         print("Letters in words:")
         letters = set("".join(words))
