@@ -2,7 +2,7 @@ import pickle
 import pandas as pd
 
 def get_all_words(verbose = False):
-    data = pd.read_csv("ods_fullforms_2020-08-26.csv",sep='\t',header = None)
+    data = pd.read_csv("ddo_fullforms_2020-08-26.csv", sep="\t", header = None)
     words = list(data[0])
 
     # Lowercase
