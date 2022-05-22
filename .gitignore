@@ -1,3 +1,4 @@
 *.txt
 *.csv
+!ddo_fullforms_2020-08-26.csv
 .DS_Store
