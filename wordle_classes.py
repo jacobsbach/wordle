@@ -1,4 +1,6 @@
+#from typing_extensions import Self
 import numpy as np
+import pandas as pd
 
 class WordleEncoder():
     def __init__(self, path = 'five_letter_words.txt'):
@@ -98,11 +100,10 @@ class WordleLookup(WordleEncoder):
         guess_has_no_duplicates = len(guess) == len(set(guess))
         if guess_has_no_duplicates:
             # This is simple. Add the yellows by checking if guess letter is in answer
-            yellow = np.isin(guesses, answers)
+            yellow = (guesses[:,:,None] == answers[:,None,:]).any(-1)
             responses += 1*yellow
             return responses
-        else: # If t
-            
+        else:
             # Make yellows iteratively until no more matches are found
             # Find rows (words) that have still duplicated letters after green letters are removed
             all_rows = np.array(range(answers.shape[0]))
@@ -134,12 +135,12 @@ class WordleLookup(WordleEncoder):
             x = x[:first_n]
             
         nb_guesses = x.shape[0]
-        R = np.zeros((nb_guesses,nb_guesses)).astype('int16')
+        R = np.zeros((nb_guesses,nb_guesses)).astype('uint8')
         for row, guess in enumerate(x):
             r = self.get_responses(guess,x)
             n = self._responses2num(r)
             R[row,:] = n
-            if row % 100 == 0:
+            if row % 10 == 0:
                 print(f"Guess number {row:<4} of {nb_guesses}")
             
         if save_txt:
@@ -148,9 +149,78 @@ class WordleLookup(WordleEncoder):
             return R
         
     def load_full_lookup(self):
-        return np.loadtxt(self.lookup_filename, dtype = 'uint16')
+        return np.loadtxt(self.lookup_filename, dtype = 'uint8')
             
         
+class WordleSolver(WordleLookup):
+    def __init__(self):
+        print("############################")
+        print("Welcome to the wordle solver")
+        print("############################")
+        print("Wait while the program starts")
+        super().__init__()
+        self.R = self.load_full_lookup()
+        self.guess_number = 0
+        self.words_reduced = self.words.copy()
+         
+    def get_best_guesses(self, top_n = 10, only_possible = False):
+        # Get information
+        nb_guesses = self.R.shape[0]
+        nb_possible_answers = self.R.shape[1]
+        informations = np.zeros(nb_guesses)
+        for guess_idx in range(nb_guesses):
+            _, _counts = np.unique(self.R[guess_idx,:], return_counts = True)
+            _p = _counts / nb_possible_answers
+            _information = -np.sum(_p*np.log2(_p))
+            informations[guess_idx] = _information
+            
+        best_args = np.argsort(-informations)
+        best_guesses = np.array(self.words)[best_args]
+        is_possible_answer = [w in self.words_reduced for w in best_guesses]
+        best_informations = informations[best_args]
+        expected_reduction = (1/2)**best_informations
+        expected_nb_words = nb_possible_answers*expected_reduction
+
+        df_best = pd.DataFrame()
+        df_best['guess'] = best_guesses
+        df_best['is_possible_answer'] = is_possible_answer
+        df_best['information'] = best_informations
+        #df_best['expected_reduction'] = expected_reduction
+        df_best['expected_nb_words'] = np.round(expected_nb_words,2)
+        
+        if only_possible:
+            df_best = df_best.query('is_possible_answer')
+        return df_best.head(top_n)
     
+    def register_guess(self, guess_word, response):
+        guess_word = guess_word.lower()
+        if len(guess_word) != 5:
+            print("Expecting words with five letters")
+            return
+        if len(response) != 5:
+            print("Expecting responses with five letters")
+            return
+        if set(response) - set([0,1,2]):
+            print("Response needs to be numbers 0 (black, letter not in word), 1 (yellow, letter in word but wrong position) or 2 (green, correct letter and position)")
+            return
+        if guess_word not in self.words:
+            print(f"{guess_word} is not in word list")
+            return
+    
+        response = self._responses2num(np.array([response]))[0]
+        word_idx = self.words.index(guess_word)
+        
+        # Reduce columns (possible answers) of R_reduced
+        new_args = np.argwhere(self.R[word_idx,:] == response).ravel()
+        self.words_reduced = list(np.array(self.words_reduced)[new_args])
+        self.R = self.R[:,new_args]
+        self.guess_number += 1
+        
+    def print_possible_answers(self, top_n = 10):
+        nb_possible_answers = len(self.words_reduced)
+        print(f"Listing top {top_n} possible answers:")
+        print("\n".join(self.words_reduced[:top_n]))
+        print(f"({nb_possible_answers} total possible answers)")
+        return
         
     

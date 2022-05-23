@@ -1,7 +1,5 @@
 import pandas as pd
 
-
-
 def get_five_letter_words(verbose = False):
     data = pd.read_csv("ddo_fullforms_2020-08-26.csv", sep="\t", header = None)
     words = list(data[0])
