@@ -6,7 +6,7 @@ def run_wordle_solver():
         nb_possible_anwers = len(ws.words_reduced)
         guess_number = ws.guess_number
         print(f"Waiting for guess {guess_number+1}")
-        print(f"There are now {nb_possible_anwers} possible answers")
+        print(f"There are {nb_possible_anwers} possible answers")
         if guess_number > 0:
             print("Placed guesses:")
             for idx, (guess,response) in enumerate(zip(ws.guesses,ws.responses)):
@@ -23,35 +23,48 @@ def run_wordle_solver():
         ws = WordleSolver()
         print("The Wordle Solver is ready!")
         return ws
-        
+    
+    def _get_guess_input(ws):
+        guess = input()
+        if len(guess) != 5:
+            print("The guess has to be five characters")
+            return _get_guess_input(ws)
+        if guess not in ws.words:
+            print(ws.words)
+            print(f"{guess} is not in the word list of the solver")
+            return _get_guess_input(ws)
+        return guess
+    
+    def _get_and_parse_response():
+        response = input()
+        if (not response.isnumeric()) or (len(response) != 5):
+            print("Response has to 5 numbers")
+            print("(e.g. 10020 for yellow, gray, gray, green, gray)")
+            _get_and_parse_response()
+        response = [int(x) for x in list(response)]
+        return response
+            
     def _place_guess(ws):
         print('Place your guess:')
-        guess = input()
+        guess = _get_guess_input(ws)
         print('And what is the response?')
-        print("(e.g. 10020 for yellow,gray,gray,green,black)")
-        response = input()
-        response = [int(x) for x in list(response)]
+        print("(e.g. 10020 for yellow, gray, gray, green, gray)")
+        response = _get_and_parse_response()
         ws.register_guess(guess,response) 
-        print("Guess and response is registered.")
+        print("Guess and response is registered.\n")
         return ws
     
     def _show_best_guesses(ws):
-        print("Showing best 10 guesses")
+        print("##### Showing best 10 guesses #####")
         df_best = ws.get_best_guesses(10)
         print(df_best)
+        print("\n")
         return ws
     
     def _show_possible_answers(ws):
-        print("Showing 10 possible answers")
+        print("##### Showing 10 possible answers #####")
         ws.print_possible_answers(10)
-        return ws
-    
-    def _check_guess(ws):
-        print("What answer do you want to check?")
-        return ws
-    
-    def _show_best_two_guesses(ws):
-        print("The top 10 first two guesses are:")
+        print("\n")
         return ws
     
     def _reset_guesses(ws):
@@ -68,20 +81,16 @@ def run_wordle_solver():
         print("\t- (2) Show status")
         print("\t- (3) Show best guesses")
         print("\t- (4) Show possible answers")
-        print("\t- (5) Check a guess")
-        print("\t- (6) Show best first two guesses")
-        print("\t- (7) Reset guesses")
-        print("\t- (8) Exit")
+        print("\t- (5) Reset guesses")
+        print("\t- (6) Exit")
     
     call_dict = {
         '1':_place_guess,
         '2':_show_status,
         '3':_show_best_guesses,
         '4':_show_possible_answers,
-        '5':_check_guess,
-        '6':_show_best_two_guesses,
-        '7':_reset_guesses,
-        '8':_exit,
+        '5':_reset_guesses,
+        '6':_exit,
         }
     
     def get_input():
@@ -104,7 +113,8 @@ def run_wordle_solver():
         if ws == 'exit':
             break
         _show_status(ws)
-        print("Options:")
+        
+        print("\nOptions:")
         _show_options()
         user_input = get_input()
     

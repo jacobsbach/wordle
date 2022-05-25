@@ -191,6 +191,13 @@ class WordleLookup(WordleEncoder):
         df_best_two = pd.DataFrame(data = data, columns = ['guess_1','guess_2','information','expected_nb_words'])
         df_best_two.to_csv(self.best_two_guesses_filename)
         return
+    
+    def load_best_two_guesses(self):
+        if os.path.isfile(self.best_two_guesses_filename):
+            return pd.read_csv(self.best_two_guesses_filename)
+        else:
+            print(f"The file {self.lookup_filename} has not been generated yet.")
+            print(f"Run the function 'calculate_full_lookup'")
         
 class WordleSolver(WordleLookup):
     def __init__(self):
