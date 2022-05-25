@@ -2,21 +2,24 @@
 from wordle_classes import WordleSolver
      
 def run_wordle_solver():
-    def print_options():
-        print("\t- Place guess (p)")
-        print("\t- Show best guesses (b)")
-        print("\t- Show possible answers (a)")
-        print("\t- Check a guess (c)")
-        print("\t- Show best first two guesses (t)")
-        print("\t- Reset guesses (r)")
-        print("\t- Exit (e)")
+    def _show_status(ws):
+        nb_possible_anwers = len(ws.words_reduced)
+        guess_number = ws.guess_number
+        print(f"Waiting for guess {guess_number+1}")
+        print(f"There are now {nb_possible_anwers} possible answers")
+        if guess_number > 0:
+            print("Placed guesses:")
+            for idx, (guess,response) in enumerate(zip(ws.guesses,ws.responses)):
+                print(f"{idx+1:>2}:\t{guess}\t({response})")
+                
+        return ws
         
-    def initialize():
+    def _initialize():
         print("\n\n")
         print("#################################")
         print("# Welcome to the wordle solver #")
         print("#################################")
-        print("Wait while the solver starts...\n")
+        print("Wait approximately 30 seconds while the solver starts...\n")
         ws = WordleSolver()
         print("The Wordle Solver is ready!")
         return ws
@@ -29,11 +32,13 @@ def run_wordle_solver():
         response = input()
         response = [int(x) for x in list(response)]
         ws.register_guess(guess,response) 
+        print("Guess and response is registered.")
         return ws
     
     def _show_best_guesses(ws):
         print("Showing best 10 guesses")
-        ws.get_best_guesses(10)
+        df_best = ws.get_best_guesses(10)
+        print(df_best)
         return ws
     
     def _show_possible_answers(ws):
@@ -50,21 +55,33 @@ def run_wordle_solver():
         return ws
     
     def _reset_guesses(ws):
+        ws.reset()
         print("Guesses reset")
-        return
+        return ws
     
-    def _exit(ws):
+    def _exit(_):
         print("Exiting the solver. See you!")
         return 'exit'
     
+    def _show_options():
+        print("\t- (1) Place guess")
+        print("\t- (2) Show status")
+        print("\t- (3) Show best guesses")
+        print("\t- (4) Show possible answers")
+        print("\t- (5) Check a guess")
+        print("\t- (6) Show best first two guesses")
+        print("\t- (7) Reset guesses")
+        print("\t- (8) Exit")
+    
     call_dict = {
-        'p':_place_guess,
-        'b':_show_best_guesses,
-        'a':_show_possible_answers,
-        'c':_check_guess,
-        't':_show_best_two_guesses,
-        'r':_reset_guesses,
-        'e':_exit,
+        '1':_place_guess,
+        '2':_show_status,
+        '3':_show_best_guesses,
+        '4':_show_possible_answers,
+        '5':_check_guess,
+        '6':_show_best_two_guesses,
+        '7':_reset_guesses,
+        '8':_exit,
         }
     
     def get_input():
@@ -72,19 +89,23 @@ def run_wordle_solver():
         if user_input not in call_dict:
             print(f'"{user_input}" is not a valid input.')
             print("Please input one of the following options:")
-            print_options()
+            _show_options()
             get_input()
         return user_input
             
     ## Running
-    ws = initialize()
+    ws = _initialize()
+    _show_status(ws)
     print("Options:")
-    print_options()
+    _show_options()
     user_input = get_input()
     while True:
         ws = call_dict[user_input](ws)
         if ws == 'exit':
             break
+        _show_status(ws)
+        print("Options:")
+        _show_options()
         user_input = get_input()
     
 if __name__ == '__main__':
