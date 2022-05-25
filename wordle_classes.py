@@ -152,12 +152,8 @@ class WordleLookup(WordleEncoder):
         return np.loadtxt(self.lookup_filename, dtype = 'uint8')
             
         
-class WordleSolver(WordleLookup):
+class WordleSolver():
     def __init__(self):
-        print("############################")
-        print("Welcome to the wordle solver")
-        print("############################")
-        print("Wait while the program starts")
         super().__init__()
         self.R = self.load_full_lookup()
         self.guess_number = 0
@@ -183,6 +179,7 @@ class WordleSolver(WordleLookup):
 
         df_best = pd.DataFrame()
         df_best['guess'] = best_guesses
+        df_best['guess_idx'] = best_args
         df_best['is_possible_answer'] = is_possible_answer
         df_best['information'] = best_informations
         #df_best['expected_reduction'] = expected_reduction
@@ -222,5 +219,4 @@ class WordleSolver(WordleLookup):
         print("\n".join(self.words_reduced[:top_n]))
         print(f"({nb_possible_answers} total possible answers)")
         return
-        
-    
+   
