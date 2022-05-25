@@ -2,6 +2,8 @@
 
 This is a wordle solver that recommends the best guesses.
 
+It currently runs for the danish version (wørdle.dk), but can easily be changed to other languages by changig the word lists.
+
 Run the file "run_wordle_solver.py" to execute program.
 
 ### About the files in the directory
