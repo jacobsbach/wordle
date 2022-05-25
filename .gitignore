@@ -5,3 +5,4 @@
 !best_first_two_guesses.csv
 !best_first_guess.csv
 .DS_Store
+__pycache__/
